@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viasox · Analysis Hub</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --ink:#e7ebf0; --muted:#9aa4b2;
+    --line:#2a2f3a; --accent:#6aa9ff; --accent2:#7ee0c4; --warn:#ffcf6b; --bad:#ff8a8a;
+    --src:#8fd3ff; --calc:#cdb4ff; --ins:#9be8c4;
+    --chip:#222734;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  header.top{padding:30px 24px 18px;max-width:1100px;margin:0 auto}
+  header.top h1{margin:0 0 4px;font-size:26px;letter-spacing:-.4px}
+  header.top .sub{color:var(--muted);font-size:14px}
+  header.top .meta{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .disclaimer{max-width:1100px;margin:14px auto 0;padding:0 24px}
+  .disclaimer .box{background:rgba(255,207,107,.08);border:1px solid rgba(255,207,107,.35);border-radius:10px;padding:12px 14px;font-size:13px;color:#f0dCa8}
+  nav.tabs{position:sticky;top:0;z-index:20;background:rgba(15,17,21,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-top:18px}
+  nav.tabs .wrap{max-width:1100px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:10px 18px}
+  nav.tabs button{white-space:nowrap;background:transparent;border:1px solid transparent;color:var(--muted);padding:8px 13px;border-radius:8px;cursor:pointer;font-size:13.5px;font-weight:600}
+  nav.tabs button:hover{color:var(--ink);background:var(--chip)}
+  nav.tabs button.active{color:#fff;background:linear-gradient(180deg,#2b3344,#222a39);border-color:var(--line)}
+  main{max-width:1100px;margin:0 auto;padding:22px 24px 80px}
+  .secthead{margin:6px 0 16px}
+  .secthead h2{font-size:20px;margin:0 0 4px;letter-spacing:-.3px}
+  .secthead p{margin:0;color:var(--muted);font-size:13.5px}
+  .toolbar{display:flex;gap:10px;align-items:center;margin:14px 0 20px}
+  .toolbar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--ink);padding:9px 12px;font-size:13.5px}
+  .toolbar .count{color:var(--muted);font-size:12.5px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:0 0 16px;overflow:hidden}
+  .card .qh{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;cursor:pointer;user-select:none}
+  .card .qh:hover{background:var(--panel2)}
+  .qid{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#fff;background:#33405a;border-radius:6px;padding:3px 8px;flex:none;margin-top:2px}
+  .qtext{font-size:15.5px;font-weight:650;line-height:1.4}
+  .chev{margin-left:auto;color:var(--muted);transition:transform .18s;flex:none;margin-top:2px}
+  .card.open .chev{transform:rotate(90deg)}
+  .body{display:none;padding:2px 18px 18px;border-top:1px solid var(--line)}
+  .card.open .body{display:block}
+  .block{margin-top:14px}
+  .label{display:inline-block;font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.6px;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-bottom:8px}
+  .label.src{color:var(--src);background:rgba(143,211,255,.1)}
+  .label.calc{color:var(--calc);background:rgba(205,180,255,.1)}
+  .label.ins{color:var(--ins);background:rgba(155,232,196,.1)}
+  .block .content{font-size:14px;color:#d4dae3}
+  .block.sources .content{font-size:13px;color:var(--muted)}
+  .block ul{margin:6px 0 0;padding-left:18px}
+  .block li{margin:5px 0}
+  .block.insight .content{background:rgba(155,232,196,.06);border-left:3px solid var(--accent2);padding:10px 14px;border-radius:0 8px 8px 0;color:#e3f3ea}
+  .flag{margin-top:12px;background:rgba(255,207,107,.07);border:1px solid rgba(255,207,107,.3);border-radius:8px;padding:9px 12px;font-size:12.5px;color:#f0dca8}
+  .flag b{color:var(--warn)}
+  code,.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .tnote{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .tnote h3{margin:0 0 6px;font-size:15.5px;color:var(--warn)}
+  .tnote p{margin:0;font-size:13.5px;color:#d4dae3}
+  footer{max-width:1100px;margin:0 auto;padding:0 24px 50px;color:var(--muted);font-size:12px}
+  .expandall{background:var(--chip);border:1px solid var(--line);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12.5px}
+  .expandall:hover{color:var(--ink)}
+  @media (max-width:640px){.qtext{font-size:14.5px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Viasox · Analysis Hub</h1>
+  <div class="sub">Every business question we've investigated — data sources, the actual calculations run, and the usable insight.</div>
+  <div class="meta">Compiled 2026-06-21 · BigQuery <code>viadb-396013.shopbq</code> · 40 questions across 8 sections</div>
+</header>
+<div class="disclaimer"><div class="box">
+  ⚠️ <b>Read before quoting externally.</b> Several findings come from competing methodologies that don't fully agree (catalog pattern/solid split, net-contribution sign, raw-vs-decay-controlled YoY, subscription tier pricing). Those are flagged inline and collected in the <b>Tensions</b> tab. A few "offers hurt LTV" style claims are explicitly gated on CPA/COGS data we don't have.
+</div></div>
+
+<nav class="tabs"><div class="wrap" id="tabwrap"></div></nav>
+
+<main>
+  <div class="secthead"><h2 id="secTitle"></h2><p id="secDesc"></p></div>
+  <div class="toolbar">
+    <input id="filter" placeholder="Filter questions in this section…">
+    <span class="count" id="count"></span>
+    <button class="expandall" id="expandBtn">Expand all</button>
+  </div>
+  <div id="cards"></div>
+</main>
+<footer>
+  Source scripts &amp; data live in <code>~/Documents/Claude Code/viasox/</code>. Methodology &amp; query rules are intentionally omitted here — see <code>CLAUDE.md</code> and <code>SKILL_VIASOX_COHORT_ANALYSIS.md</code>.
+</footer>
+
+<script>
+const SECTIONS = [
+ {id:"s1", tab:"1 · Offer Impact", title:"Offer Impact — BOGO vs B2G3F (core cohort work)",
+  desc:"Timeline: pre-offer (→Jan 2025) → BOGO (Feb–Jul 2025) → B2G3F (Aug 2025+). Within-subject cohort, reactivation, frequency, LTV.", cards:[
+  {qid:"1.1", q:"How does B2G3F compare to BOGO on AOV, units, frequency?",
+   src:"<code>viasox_per_customer_kpis_by_phase.csv</code>, <code>viasox_frequency_by_phase.csv</code>; orders table, deduped. BOGO window Feb–Jul 2025 (6mo) vs B2G3F Aug 2025–Mar 2026 (8mo).",
+   calc:["Per-customer metrics computed within each phase: revenue/customer = SUM(subtotal)÷COUNT(DISTINCT email); orders/customer; units/customer.",
+   "AOV = revenue/customer ÷ orders/customer.",
+   "Both phases mix cohort vintages, so the comparison is phase-level, not cohort-controlled."],
+   ins:"B2G3F beats BOGO on every basket metric: AOV +14% ($67.63→$77.25), orders/customer +4.5% (1.34→1.40), units/customer +25% (4.56→5.71). The buy-2-get-3 mechanic drove bigger baskets than BOGO's simpler discount."},
+  {qid:"1.2", q:"Did the offers reactivate existing/dormant cohorts (within-subject, same cohort pre vs post)?",
+   src:"<code>viasox_monthly_cohort_data.csv</code> (71 monthly cohorts, Feb 2020–Apr 2026), <code>viasox_reactivation.py</code>, <code>viasox_preoffer_cohort_lift.csv</code>.",
+   calc:["Built seasonality-adjusted benchmarks from pre-offer cohorts only, grouped by (months-since-acq × calendar-month).",
+   "For each post-offer cell: expected = benchmark × expected_active%; delta = actual − expected.",
+   "Aggregated deltas by calendar month across mature cohorts; validated with linear-regression slope + ADF stationarity test."],
+   ins:"Reactivation is real at the cohort level. First half (Feb–Aug 2025): ~+$0.33/customer/mo, +121% active-customer lift on mature cohorts. Second half (Sep 2025–Mar 2026): +$0.11/customer/mo, +47% lift. A change-point lands exactly at the Aug 2025 B2G3F launch."},
+  {qid:"1.3", q:"Is the reactivation effect durable or decaying?",
+   src:"<code>viasox_decay_analysis.py</code>; monthly contribution deltas Feb 2025–Mar 2026 (14 mo) vs pre-offer benchmarks.",
+   calc:["Linear OLS slope on the delta series; exponential decay fit Δ(t)=(Δ₀−Δ∞)e^(−λt)+Δ∞; log-decay fit.",
+   "ADF stationarity test; Chow change-point F-test at the Aug 2025 launch.",
+   "Half-life = ln(2)/λ."],
+   ins:"Decay is NOT statistically significant: slope ≈ −$0.005/mo (p=0.40), ADF says stationary, λ≈0 (half-life ≫ 14mo). The Aug 2025 change-point IS significant (F=40.8, p<0.01) but it's a level shift (BOGO ~$35K/mo deltas → B2G3F ~$18K/mo), not a decay curve.",
+   flag:"A separate read (decay model in the cohort cluster) estimated erosion of ~−1.2pp/mo turning negative by Q1 2026. Same data, different windowing — see Tensions."},
+  {qid:"1.4", q:"Did offers compress time between repeat orders?",
+   src:"<code>neworders_with_sequence</code> (deduped on email+date), <code>viasox_days_between.py</code>, <code>viasox_days_between_by_phase.csv</code>.",
+   calc:["LAG() over consecutive orders to get gaps for pairs 1→2 … 5→6; same-day orders deduped to kill false 0-day gaps.",
+   "Bucketed by second-order date into 5 windows (pre-BOGO ×2, BOGO, B2G3F early, B2G3F mature).",
+   "t-test + Mann-Whitney on pre-BOGO vs post for pairs 2→3 … 5→6."],
+   ins:"Pairs 2→3 through 5→6 all compressed significantly (p<0.0001), ~14–42 days shorter, strongest in deepest repeaters. Pair 1→2 excluded (dormant-reactivation compositional bias inflates the mean)."},
+  {qid:"1.5", q:"Did offers raise or dilute per-customer LTV?",
+   src:"<code>viasox_ltv_impact.py</code>, <code>viasox_monthly_cohort_data.csv</code> (cum_rev per cohort). Cohorts classed pre-offer / mixed / offer-era.",
+   calc:["Cumulative LTV per cohort at fixed ages M3/M6/M12/M18/M24.",
+   "Regression LTV = a + b·cohort_idx + c·post_dummy (OLS); c = offer-era effect after removing natural cohort trend.",
+   "Chow F-test for the break point."],
+   ins:"LTV is diluted early, recovering late. Adjusted: M3 ≈ −$26.04 (p<0.0001), M6 ≈ −$21.81, M12 ≈ −$18.52, M24 gap ≈ −$8. Offers front-load discounted revenue; they don't appear to permanently destroy lifetime value. Within offer-era, newer cohorts show no further decline (slope≈0).",
+   flag:"Per project rule, this is NOT a 'offers are bad' verdict without CPA/COGS."},
+  {qid:"1.6", q:"Per-customer revenue run-rate by phase?",
+   src:"<code>viasox_per_customer_kpis_by_phase.csv</code>, <code>viasox_frequency_by_phase.csv</code>. Pre-offer 13mo, BOGO 6mo, B2G3F 8mo.",
+   calc:["Monthly run-rate = phase revenue/customer ÷ phase months.","Frequency/mo = orders/customer ÷ months; AOV = rev/orders."],
+   ins:"Pre-offer $7.10/customer/mo → BOGO $11.27 (+59%) → B2G3F $9.66 (+36%). BOGO's monthly rate was highest but unsustainable (6mo, deepest discount); B2G3F sustained a high rate over a longer window with bigger baskets."},
+  {qid:"1.7", q:"YoY lift on mature cohorts, same calendar months?",
+   src:"<code>viasox_offer_effect_recap_v2.py</code>, <code>viasox_yoy_lift_2025_vs_2024.csv</code>, <code>viasox_yoy_lift_2026_vs_2025.csv</code>. Mature base = acquired before Aug 2024 (~180K).",
+   calc:["Held the mature-cohort base constant; pivoted revenue & active customers by calendar month across 2024/2025/2026.",
+   "YoY lift % = (this year ÷ last year − 1); same-calendar-month matching controls seasonality; mature-only filter controls new-customer noise."],
+   ins:"RAW YoY on the fixed mature base is negative (BOGO months avg ≈ −43%; B2G3F months avg ≈ −7%) — those cohorts naturally decay and offers shifted spend toward newer/reactivated cohorts. The decay-CONTROLLED lift (card 1.2) is positive. Both are 'true' but answer different questions.",
+   flag:"This raw-negative vs decay-controlled-positive split is the #1 source of confusion in this dataset — see Tensions."},
+  {qid:"1.8", q:"Net contribution: acquisition lift minus LTV dilution — net positive?",
+   src:"<code>viasox_contribution.py</code>, <code>viasox_monthly_cohort_data.csv</code>. Counterfactual cohort sizes projected at 2023→2024 YoY growth.",
+   calc:["Actual revenue = Σ(cohort_size_actual × rev/cust_actual).","Expected (no-offer) = Σ(cohort_size_projected × rev/cust_benchmark).","Contribution delta = actual − expected, Feb 2025–Mar 2026."],
+   ins:"Ambiguous and explicitly gated. One counterfactual put the program net-negative; the handoff frames reactivation as real but at lower per-capita spend. Total revenue grew YoY while mature cohorts didn't — offers redistributed spend more than they grew the pie. No net-positive/negative claim is valid without CPA from Pierre.",
+   flag:"Most contested finding in the whole corpus. Treat the negative figure as one model's output, not a conclusion."},
+  {qid:"1.9", q:"By-category breakdown across the 4 product lines?",
+   src:"<code>viasox_*_cohort_data.csv</code> (EasyStretch / AnkleCompression / Compression / Ankle), <code>viasox_reactivation_category.py</code>, <code>viasox_days_between_category.py</code>, <code>viasox_pattern_category_share.csv</code>.",
+   calc:["First-order category assignment by title rules (order matters: AnkleCompression before Compression).",
+   "Re-ran the reactivation benchmark + days-between within each category cohort table.",
+   "Revenue share at list: Compression ~41%, Ankle ~27%, AnkleCompression ~15%, EasyStretch ~9%."],
+   ins:"Effects vary by category. EasyStretch (medical/diabetic, price-sensitive) showed the strongest reactivation and biggest gap compression; Compression (already highly engaged) showed the least room to move. Implication: category-specific pricing/frequency strategy beats one-size-fits-all."}
+ ]},
+
+ {id:"s2", tab:"2 · Offer Scaling", title:"Offer Scaling — demand ceiling & the ladder",
+  desc:"Should we go deeper? Adoption, the demand cliff above 5 pairs, layer-vs-replace modeling, and the rollout plan.", cards:[
+  {qid:"2.1", q:"What % adopt the 5-pair B2G3F offer, and do they repeat?",
+   src:"<code>viasox_b2g3f_adoption.csv</code>; B2G3F era Aug 2025–Mar 2026; 302,983 deduped customers.",
+   calc:["Counted customers who bought exactly 5 pairs in any single order ≥1× = 133,388 (44.02%).","Repeat takers (≥2×) = 20,112 (6.64% of era buyers ≈ 15% of triers).","Pure observed counts — no modeling."],
+   ins:"44% trial adoption (strong), but only 6.6% repeat — 93% of triers don't yet make it a habit. Closing the trial→repeat gap is the highest-ROI follow-up lever."},
+  {qid:"2.2", q:"What's the hard demand ceiling for bigger baskets?",
+   src:"<code>viasox_customer_volume_buckets.csv</code>; 302,985 customers by max basket ever achieved.",
+   calc:["Cumulative % of customers reaching each basket tier.","5+ pairs = 56.7%; 8+ = 6.4%; 10+ = 3.5%; 16+ = 0.32%; 21+ = 0.08%.","Each rung up = 3–5× (up to 177×) fewer addressable customers."],
+   ins:"A steep demand cliff above 5 pairs. Practical public-shelf ceiling is 10 pairs (≈3.5% of base reachable with promo); anything above is VIP-only territory."},
+  {qid:"2.3", q:"Realistic adoption rates to model for new tiers?",
+   src:"<code>viasox_offer_scaling_model.py</code> (adoption_estimates), <code>viasox_offer_scenarios.csv</code>.",
+   calc:["Base = natural demand ceiling (% historically buying at that tier).","Applied promo uplift ×1.5–3 (extrapolated from observed BOGO→B2G3F lift).","B4G6 gets +50% over B5G5 for better per-pair value ($12 vs $15)."],
+   ins:"Base-case realistic adoption: B4G4 ~12%, B5G5 ~8%, B4G6 ~12% (≈54.5K adopters/yr → ~98K orders). B8G8/B8G12 capped at ~1%/0.5% — invitation-only, not mass-market.",
+   flag:"The uplift multipliers (×1.5–3) are ASSUMPTIONS, not measured. The demand-ceiling % underneath them is real."},
+  {qid:"2.4", q:"Should we layer a new tier on B2G3F or replace it?",
+   src:"<code>viasox_offer_incremental_impact.csv</code>, <code>viasox_offer_replacement_impact.csv</code>, <code>viasox_offer_scaling_model.py</code>.",
+   calc:["LAYER: B4G6 adopters replace ~2.0 B2G3F orders each → +$883K direct + $491K shipping = +$1.37M/yr (+3.9% on $35M).",
+   "REPLACE: solo-offer scenarios under 30% churn / 12% adoption / 70% downgrade assumptions.",
+   "Sensitivity: replacement swings 6–10× on the churn/adoption inputs."],
+   ins:"Layer, don't replace. Layering B4G6 ≈ +$1.4–2.0M/yr with low cannibalization risk. Replacement is too assumption-sensitive: B4G4 only looks positive at churn≤30% & adoption≥12%; B5G5 (−$0.8M) and B4G6 (−$2.1M) replacements model negative."},
+  {qid:"2.5", q:"Do bigger-basket customers have higher LTV?",
+   src:"<code>viasox_customer_volume_buckets.csv</code>; customers stratified by max basket, 8-mo window.",
+   calc:["Avg lifetime units by stratum: 5-pair 6.31u; 10-pair 19.94u (3.2×); 16–20 34.94u (5.5×); 21+ 71.44u (11.3×).","Repeat freq: 5-pair 1.38 orders vs 21+ 6.18 orders (4.5×).","Observed correlation, not causal."],
+   ins:"Bigger-basket buyers are fundamentally higher-LTV. Scaling offers up isn't just a bigger transaction — it segments and retains the most valuable customers. A virtuous cycle, not just a discount."},
+  {qid:"2.6", q:"Pricing architecture of the ladder ($12 vs $15/pair)?",
+   src:"<code>viasox_offer_scaling_model.py</code> (offer_economics) at $30 list.",
+   calc:["Effective per-pair: BOGO $15; B2G3F $12; B4G4 $15; B5G5 $15; B4G6 $12; B8G8 $15; B8G12 $12.","Two discrete clusters: every 50%-off tier = $15/pair; every 60%-off tier = $12/pair."],
+   ins:"The ladder is two price clusters, not seven tiers. Scaling B2G3F→B4G6 holds per-pair at $12 ('bigger basket, same unit price'). Mixing a $15/pair tier (B4G4) into the same public ladder reads as a downgrade to B2G3F customers."},
+  {qid:"2.7", q:"Where does revenue concentrate by AOV bucket (last 90d)?",
+   src:"<code>viasox_aov_histogram_90d.csv</code>; 147,641 orders, $8.17M, ~2026-02-09→05-09; $10 buckets.",
+   calc:["% orders & % revenue per bucket + cumulative.","$50–60 bucket (B2G3F) = mode (30.5% orders, 32.9% revenue).","Top 22.3% of orders (>$60 AOV) drive 38.2% of revenue. Mean AOV $55.40."],
+   ins:"Revenue skews to higher-AOV orders. Moving even 12% of $50–60 customers up to $100–120 (a B4G6 tier) shifts the distribution right by ~+2.3% revenue."},
+  {qid:"2.8", q:"Rollout plan (phased A/B test)?",
+   src:"<code>VIASOX_OFFER_SCALING_PROPOSAL.md</code> §6; baseline params in <code>viasox_offer_scaling_model.py</code>.",
+   calc:["Phase 1 (Q3'26, 8wk): 50/50 A/B; gate = B4G6 adoption ≥5% AND treatment AOV ≥ control.",
+   "Phase 2 (Q4'26): broad rollout + email/SMS to power users if Phase 1 passes.",
+   "Phase 3 (Q1'27): B8G12 VIP, invite-only to ≥10 orders or ≥$500 LTV."],
+   ins:"Conservative, measurement-gated. The 5% Phase-1 threshold sits 2.4× below the 12% base-case expectation. Risk is front-loaded into an 8-week test; upside if it rolls out is +$1.4–2.0M/yr."}
+ ]},
+
+ {id:"s3", tab:"3 · Solids vs Patterns", title:"Solids vs Patterns & Licensed IP (Peanuts)",
+  desc:"The solids-vs-non-solids thread: catalog mix, pattern-first LTV, the Peanuts premium and its erosion under discounting.", cards:[
+  {qid:"3.1", q:"What's the catalog split between solids and patterns? (why ~88% vs ~36%)",
+   src:"<code>viasox_pattern_classifier_v2.py</code>, <code>viasox_all_skus_v2_classified.csv</code> (1,318 SKUs, 1.73M units), <code>viasox_pattern_v2_summary.csv</code>; B2G3F era.",
+   calc:["V1 (title-keyword): 87.7% of top SKUs read 'solid' — but the keyword list missed design names.",
+   "V2 (color-exclusion): a SKU is solid only if ALL tokens are colors/product-types; anything else (Northern Lights, Moon, Butterfly, Jellyfish) → pattern.",
+   "V2 units: pattern 52.8% (915K u), solid 36.4% (631K u), ambiguous/mystery 10.8% (187K u).",
+   "Root cause: 69 solid SKUs repeat heavily across sizes; 927 pattern SKUs are mostly unique designs."],
+   ins:"The '88% solid' figure was a V1 artifact — it misclassified high-volume designs like 'Northern Lights' (29.7K units) as solids. Properly classified (V2), it's ~53% pattern / ~36% solid / ~11% ambiguous by units. Honest summary: solids dominate raw repeat volume, patterns punch above their weight on value.",
+   flag:"Quote a single split only with the method named. This is a real tension — see Tensions tab."},
+  {qid:"3.2", q:"Do pattern-first customers out-LTV solid-first customers?",
+   src:"<code>viasox_first_purchase_type_ltv.csv</code>; 302,983 B2G3F-era customers; 8-mo LTV window.",
+   calc:["First-order archetype: Peanuts-first / other-pattern-first / solid-first.",
+   "LTV = Σ(subtotal) over 8 months, deduped.",
+   "Peanuts-first $85.07 (n=28,322); pattern-first $83.97 (n=69,931); solid-first $73.88 (n=204,726).",
+   "Order frequency ~1.33–1.43 across all three → gap is per-order spend, not frequency."],
+   ins:"Pattern-first customers out-LTV solid-first by 13–15% (Peanuts +$11.19/+15.1%; other-pattern +$10.09/+13.6%), driven by bigger baskets not more orders. One of the highest-ROI acquisition levers in the data."},
+  {qid:"3.3", q:"Does pattern preference rise with loyalty / order sequence?",
+   src:"<code>viasox_pattern_by_loyalty_tier.csv</code>, <code>viasox_pattern_v2_by_order_seq.csv</code>, <code>viasox_pattern_lifecycle.csv</code>.",
+   calc:["By loyalty tier: pattern share 34.96% (1 order) → 41.17% (20–49 orders).",
+   "By order sequence (V2): 35.11% (order 1) → 39.01% (order 10).",
+   "By lifecycle month: flat ~28–29% — because it aggregates one-timers (mostly solids) with repeaters at each stage.",
+   "V1 order-seq looked flat because it undercounted patterns."],
+   ins:"Properly classified, pattern preference DOES rise with loyalty (~35%→~41%). The flat lifecycle reading is an aggregation artifact + V1 undercount. Heavy buyers explore more patterns.",
+   flag:"Loyalty-tier (rising) vs lifecycle-month (flat) is a known reconciliation gap — see Tensions."},
+  {qid:"3.4", q:"What's the Peanuts LTV premium, and how does offer depth affect it?",
+   src:"<code>viasox_peanuts_analysis.html</code> (same-month M3/M6 cohort premiums), <code>viasox_first_purchase_type_ltv.csv</code>. Three eras.",
+   calc:["Same-month cohort: Peanuts vs non-Peanuts acquired in month M, measured M3 forward.",
+   "M3 premium: pre-offer +48.5% (n=11,359) → BOGO +20.7% (n=8,013) → B2G3F +9.5% (n=19,724).",
+   "M6 premium more durable: pre-offer +44% → B2G3F +26%.",
+   "8-mo phase LTV: +15.1% (most conservative)."],
+   ins:"The IP premium ranges from +44% at full price down to ~+9.5% inside deep B2G3F discounting (M3) — discounting neutralizes ~80% of the licensing edge short-term. Implication: a full-price Peanuts channel could recover the lost premium."},
+  {qid:"3.5", q:"Is Peanuts good for reactivation?",
+   src:"<code>viasox_peanuts_analysis.html</code> (dormancy-gap analysis), 3 eras; t-test on mean gaps.",
+   calc:["Pre-BOGO: Peanuts mean gap 158.7d vs non-Peanuts 184.6d → −25.9d (p<0.001).",
+   "365+ day ultra-dormant: Peanuts 13.5% of those orders vs 16.6% of all → 0.81× (under-indexed).",
+   "Direction is opposite the reactivation hypothesis."],
+   ins:"No. Peanuts orders come from MORE recently active customers (26 days shorter gaps), and are under-indexed among 365+ day winbacks. Peanuts is an acquisition + engagement lever, not a dormant-winback tool. Winback needs targeted CRM, not an IP launch."},
+  {qid:"3.6", q:"Peanuts revenue contribution?",
+   src:"<code>VIASOX_OFFER_AND_PATTERN_INSIGHTS.md</code> §2.2, <code>viasox_peanuts_cohort_data.csv</code>; 8-mo B2G3F era.",
+   calc:["53,107 units (3.1% of 1.72M).","List $1.66M; after 53.7% effective discount → ~$0.78M actual.","39,616 orders contained Peanuts; 28,322 customers acquired Peanuts-first."],
+   ins:"Small volume share (3.1%, ~$0.78M actual) but disproportionate acquisition value: 28.3K Peanuts-first customers at +15.1% LTV ≈ ~$2.4M lifetime value from that cohort."},
+  {qid:"3.7", q:"Top-50 SKU audit — what actually sells?",
+   src:"<code>viasox_top50_sku_audit.csv</code>; top 50 by units, B2G3F era (63.8% of all volume).",
+   calc:["Top 10 are all solid colors: Black Ankle Compression (96.6K), White Ankle Compression (87.4K), Black Compression (83.1K)…",
+   "Top pattern = Northern Lights (29.7K, #7) — V1 misread it as solid.",
+   "Pattern SKUs avg $26–29, same as solids → no retail price premium."],
+   ins:"Top sellers are basic color solids (63.8% of volume), but patterns (Floral, Animal, Peanuts) sustain strong secondary demand and drive the higher-LTV cohorts. No per-unit price premium for patterns — value is captured downstream in LTV."},
+  {qid:"3.8", q:"List-price distribution?",
+   src:"<code>viasox_list_price_reference.csv</code>; all-time line items by rounded price.",
+   calc:["$30 = 16.03M units (~80.8% of volume) — the modal single-pair price.","$22 ~10%; $60 (2-packs) ~5%; everything else <1.4% each."],
+   ins:"Heavily concentrated at $30 (80%+ of units). This price simplicity makes offer scaling clean: a single per-pair discount % applies across the catalog, and tiers scale by pair quantity not price variation."}
+ ]},
+
+ {id:"s4", tab:"4 · Color Launches", title:"Colorway Launch → Reactivation",
+  desc:"When the solid colorways first appeared, and whether the 2024 launches pulled dormant customers back (this session's work, 2026-06-21).", cards:[
+  {qid:"4.1", q:"When did tan, gray, navy blue, royal purple first appear?",
+   src:"Orders table line-item titles + variant titles (regex match), full history; verified data coverage starts 2020-02-08.",
+   calc:["Matched colors on title+variant with word-boundary regex (\\btan\\b avoids 'tartan'; \\bgr[ae]y\\b both spellings; \\bnavy blue\\b excludes Navy Stripes / Green Navy / Heather Navy / 'Navy Days'; \\broyal purple\\b).",
+   "Printed all 249 matched titles for false-positive review.",
+   "Weekly volume ramp to separate stray/test orders and catalog renames from true launches."],
+   ins:"Gray 2021-01-20 and Tan 2021-05-28 are old staples (not recent launches). Navy Blue launched 2024-05-01 (April's lone order was a stray/test), Royal Purple 2024-09-01. Two trap dates (2024-07-08, 2024-12-30) are catalog-wide 'Diabetic'→'EasyStretch™' renames, not launches."},
+  {qid:"4.2", q:"Did the 2024 launches reactivate dormant customers (first 3mo vs 3mo prior, seasonally controlled)?",
+   src:"Orders table, deduped; difference-in-differences with year-earlier (−364d) calendar controls.",
+   calc:["Reactivation = customer dormant 90+ days returning; rate = reactivated ÷ eligible-dormant pool (counts mislead as the pool grows).",
+   "91-day pre/post windows; control = same windows shifted −364d for weekday/BFCM alignment.",
+   "Classified each in-window color buyer by gap since prior order (new / active / reactivated); penetration vs window-wide."],
+   ins:"Both new colors over-indexed ~1.5× among reactivators and ~30% of their first-quarter buyers were comebacks. But seasonally-adjusted window lift is modest: royal purple's raw surge was mostly Black Friday; navy's adjusted lift (~1,700) far exceeds its direct color-buyers (365), so most is halo/other-campaign credit, not the color alone."}
+ ]},
+
+ {id:"s5", tab:"5 · Membership", title:"Membership / VIP Club (Inveterate → Rivo)",
+  desc:"Member counts, conversion, new-vs-returning mix, and whether membership lifts 30-day LTV.", cards:[
+  {qid:"5.1", q:"How many members acquired, at what conversion rate?",
+   src:"<code>IMPROVEMENT_LOGGER.md</code>, <code>viasox_membership_cohort_summary.csv</code>; product_ids 7568136765493 / 8074119774261 / 8105768452149.",
+   calc:["Canonical detection: first occurrence of a membership product_id per email via MIN(date) — no price/title filter (title changed to 'Sock Addict' Feb 27–Apr 3 2026).",
+   "All-time ~3,700+. Trailing 90d (Mar 12–Jun 9 2026) = 3,323 members.",
+   "Conv = 3,323 ÷ ~116K unique customers ≈ 2.86%; per-week band 1.5–2.9%."],
+   ins:"~3,323 members in the last 90 days at a 2.86% conversion rate (matches the historical 2.5–3% memory). Acquisition has stabilized at ~1,000–1,100/month in 2026."},
+  {qid:"5.2", q:"New vs returning split among new members?",
+   src:"<code>viasox_member_ltv_historical_12mo.py</code>, <code>viasox_membership_weekly_cohort.csv</code>.",
+   calc:["Customer's first membership-product encounter = signup; prior orders → 'returning'.","90-day sample: 42% new (no prior history) / 58% returning.","Split held stable across all three detection attempts."],
+   ins:"58% of new members are existing buyers upgrading vs 42% net-new. Membership functions as an upsell to existing customers more than a cold-acquisition vehicle; returning-customer upgrades are the bigger growth lever."},
+  {qid:"5.3", q:"Does membership lift 30-day LTV vs non-members?",
+   src:"<code>viasox_member_vs_nonmember_ltv.py</code>, <code>viasox_member_ltv_historical_12mo.py</code>, <code>viasox_member_ltv_mar_apr_may_summary.csv</code>.",
+   calc:["30d LTV = Σ(subtotal) from first order through +30d; member = any membership line item in window.",
+   "12-mo baseline: member $107.51 vs non-member $61.48 → +$46.03 (+75%).",
+   "Recent: Mar'26 +103%, Apr'26 +90%, May'26 (partial) +84%."],
+   ins:"Members spend 75–103% more in their first 30 days, measured across two independent methods (12-mo history + Mar–May'26 cohorts). The lift is real but causality is unproven — members may simply be higher-LTV customers who self-selected in.",
+   flag:"This card (a clean +75% lift) is more bullish than the earlier inventory's 'weak/mixed' read. The 30-day window here differs from the inventory's framing — see Tensions."}
+ ]},
+
+ {id:"s6", tab:"6 · Subscription", title:"Subscription Program Strategy (board-facing)",
+  desc:"Who already behaves like a subscriber, tier design, ARR scenarios, value vs offers, flow design, and launch blockers.", cards:[
+  {qid:"6.1", q:"How many customers already behave like subscribers?",
+   src:"<code>viasox_subscription_scenarios.md</code>, <code>viasox_board_presentation_script.md</code>; 24-mo purchase history.",
+   calc:["Bucketed by distinct order-dates per email over trailing 24 months.",
+   "≥3 occ: 60,823 (median gap 72d); ≥5: 15,137 (63d); ≥7: 5,402 (51d); ≥10 super-repeaters: 1,693 (39d, 6.5 pairs/occ); ≥15: 475 (29d)."],
+   ins:"1,693 super-repeaters already buy on a subscription cadence (every 39 days, 6.5 pairs). The realistic addressable market is the ~5,400 with ≥7 occasions; the ~1,700 are effectively pre-sold by behavior."},
+  {qid:"6.2", q:"How many tiers / what price points?",
+   src:"<code>viasox_subscription_scenarios.md</code>, <code>viasox_board_presentation_script.md</code>, <code>HANDOVER_VIASOX_SUBSCRIPTION.md</code>.",
+   calc:["Original 5-tier ladder cut to 3 after the persona debate.","Killed a $15/pair Monthly Starter ('worse than BOGO') + quarterly variants.","Annual Power $540/yr ($9/pair) kept as email-only for super-repeaters."],
+   ins:"Launch with 3 tiers mapped to behavior: a monthly box, a quarterly commit, and an email-only Annual Power for the elite ~475. Fewer tiers = lower operational load.",
+   flag:"The docs disagree on the entry tier: an early scenario doc lists 'Drop Pass $9 (perks only)'; a later board script lists 'Pattern Drop Pass $45 (3-pair box)'. The design evolved — confirm the current intended price before using. See Tensions."},
+  {qid:"6.3", q:"Why 3 tiers not 9? (the 5-persona debate)",
+   src:"<code>viasox_board_presentation_script.md</code> (debate section).",
+   calc:["5 personas: Customer, Retention, Growth, Acquisition, Customer Service.",
+   "4 of 5 independently flagged 'too many tiers' → cut to 3.",
+   "CS projected 35–40% of early tickets = 'why was I charged?' → cancel/pause/skip must be airtight."],
+   ins:"The 3-tier design is a risk-mitigation consensus, not a product hunch. Ops/CS flagged complexity cost; economics killed the Monthly Starter as unsellable next to BOGO. One unresolved disagreement (paywall an offer for subs?) was deferred to the CEO."},
+  {qid:"6.4", q:"Year-1 ARR range + scenarios?",
+   src:"<code>viasox_subscription_scenarios.md</code>, <code>viasox_board_presentation_script.md</code>.",
+   calc:["Per-tier opt-in × price × periods, with 40–60% cannibalization baked in.","Base ~$1.0M net; conservative (10% opt-in) ~$550K; optimistic (Shinesty 25%) ~$2.1M."],
+   ins:"Planning band $500K–$2.1M net ARR (base ~$1M ≈ +6% on repeat-customer revenue). MEASURED sizing on real segmentation, but CONDITIONAL on retention — without Shinesty M3/M6/M12 curves these are acquisition projections, not revenue forecasts.",
+   flag:"ARR is a model on an unknown retention denominator. Biggest blocker, not a forecast."},
+  {qid:"6.5", q:"What justifies subscription price over BOGO/B2G3F?",
+   src:"<code>viasox_subscription_scenarios.md</code>, <code>viasox_board_presentation_script.md</code>.",
+   calc:["BOGO $15/pair; B2G3F ~$11–12/pair.","Only Annual Power ($9/pair) has a pure price edge — and it's email-only.","Other tiers justify via non-price value."],
+   ins:"The monthly/quarterly tiers don't beat BOGO on price — they sell on access (48-hr early access to weekly drops), curation (auto-pick), and exclusivity (subscriber-only patterns). These perks must be operationally enforced or the value prop collapses."},
+  {qid:"6.6", q:"Flow/product design decisions?",
+   src:"<code>VIASOX_SUBSCRIPTION_FLOW_BLUEPRINTS.md</code>; Figma 4RD7PlhYO9z3emPkJZn3NH.",
+   calc:["8 screens = 4 acquisition (landing, configurator, cart+disclosure, confirm) + 4 management (hub, upcoming designs, edit, pause/cancel).",
+   "3 locked rules: choose by sock TYPE not mmHg; patterns auto-pick + swap-ahead (NOT a signup step); bundle volume×frequency×price into one tile.",
+   "v1's 12-screen design (mmHg picker, signup pattern picker, split steps) was cut to 8."],
+   ins:"An 8-screen model mirroring Shinesty/Foot Cardigan brevity. The three locked decisions remove signup friction: sock type over compression level, auto-pick patterns with optional swap, one bundled plan tile."},
+  {qid:"6.7", q:"What blocks launch? (5 CEO decisions)",
+   src:"<code>viasox_board_presentation_script.md</code>, <code>HANDOVER_VIASOX_SUBSCRIPTION.md</code>.",
+   calc:["1) Approve the 3-tier stack. 2) BOGO/B2G3F coexistence (parallel / paywall / phase-down). 3) Checkout opt-out default (Growth says 2× lever; legal/brand risk).",
+   "4) Get Shinesty retention curves (biggest blocker). 5) Annual Power refund formula (pre-launch, prevents chargebacks)."],
+   ins:"Five discrete blockers, all needing CEO input. No launch is possible until they're resolved — and #4 (retention data) gates the credibility of every ARR number."}
+ ]},
+
+ {id:"s7", tab:"7 · Acquisition & SMS", title:"Acquisition Volume & SMS Channel",
+  desc:"Offer-driven acquisition lift, the incremental-vs-projection estimate, and the Postscript-vs-Klaviyo SMS cost outlook.", cards:[
+  {qid:"7.1", q:"How much did offers lift new-customer acquisition (by phase)?",
+   src:"<code>viasox_acquisition_monthly.csv</code>, <code>viasox_cohort_acquisition_by_phase.csv</code>, <code>viasox_cohort_size_projection.py</code>.",
+   calc:["Pre-offer 2024 ~12.9K new/mo.","BOGO (Feb–Aug'25) ~+10% vs baseline (noisy).","BOGO+B2G3F (Aug'25–Mar'26): +25–40% non-holiday, +80–100% in Nov–Dec."],
+   ins:"Acquisition rose materially under B2G3F (+25–40% most months, +80–100% over holiday). But the raw lift is NOT isolated from ad-spend changes — true offer ROI needs CPA data."},
+  {qid:"7.2", q:"Incremental acquisition vs a no-offer projection?",
+   src:"<code>viasox_cohort_size_projection.py</code> + <code>.html</code>.",
+   calc:["Baseline = 2023→2024 YoY growth ≈ 1.32×, applied per calendar month forward.",
+   "Actual Feb'25–Mar'26 = 223,631; projected no-offer = 211,342 → +12,289 (+5.8%).",
+   "Assumes the 1.32× trend would have continued absent offers (unvalidated)."],
+   ins:"~+12,300 incremental customers (+5.8%) over the 13-month offer period by the YoY-baseline method. It's a relative delta resting on a trend assumption — causal proof needs CPA/spend or matched-market controls.",
+   flag:"The growth-baseline rate differs across analyses (1.32× here vs ~1.21× in the contribution model) — see Tensions."},
+  {qid:"7.3", q:"Postscript vs Klaviyo SMS cost (12-mo outlook, tax)?",
+   src:"<code>viasox-klaviyo-sms-scenarios.html</code> (4 tabs); 12-mo outlook Jul'26–Jun'27.",
+   calc:["Tax: Postscript SMS is GST/HST-taxable (13% cash outflow); Klaviyo is zero-rated (reverse charge); email zero-rated.",
+   "Conservative (47.15M credits): Status quo ~$583K total cash vs Klaviyo switch ~$520K.",
+   "Standard (+20%): status quo ~$666K vs Klaviyo ~$527K → Klaviyo wins ~$139K cash."],
+   ins:"Status quo $583K–$666K/yr cash; Klaviyo switch $520K–$527K, saving $64K–$139K in cash (smaller net-of-tax). August is the pinch month (overlapping Postscript + Klaviyo Q1 bill). If carrier fees keep rising, Klaviyo is the safer long-term bet."}
+ ]},
+
+ {id:"s8", tab:"⚠ Tensions", title:"Unresolved Tensions",
+  desc:"Where analyses genuinely disagree. Resolve these before any number goes in front of Dimos or the board.", tensions:[
+  {h:"1 · Did the offers net positive or negative?", p:"The offer handoff frames reactivation as real and the LTV dip as narrowing/recovering (decay not statistically significant). A separate counterfactual contribution model put the program net-negative (≈ −$1.7M) with reactivation turning negative by Q1 2026. Per the standing project rule, NO 'offers hurt LTV / negative ROI' claim is valid without CPA + COGS. Treat the negative figure as one model's output."},
+  {h:"2 · Raw YoY vs decay-controlled lift on mature cohorts", p:"Raw YoY on a fixed mature-cohort base reads negative (those cohorts naturally decay; offers shifted spend to newer cohorts). The decay-controlled benchmark reads positive (+47–121% active lift). Both are correct for different questions — never cite one without the other."},
+  {h:"3 · Pattern vs solid catalog share (~88% vs ~36% solid)", p:"Pure measurement difference: V1 title-regex (~88% solid, missed design names like 'Northern Lights') vs the V2 color-exclusion reclassifier with an ambiguous/mystery bucket (~36% solid, ~53% pattern). Always name the method."},
+  {h:"4 · Pattern preference vs loyalty", p:"The loyalty-tier and (V2) order-sequence cuts show pattern share rising with loyalty (~35%→~41%); the lifecycle-month cut looks flat (~29%) due to aggregation + V1 undercount. Use the V2 loyalty-tier read."},
+  {h:"5 · Reactivation decay significance", p:"'Not statistically significant' (offer handoff, p=0.40, ADF stationary) vs 'eroding, ~6-month half-life, negative by Q1 2026' (decay cluster). Different windows/methods on the same series."},
+  {h:"6 · Membership LTV lift (+75% vs 'weak/mixed')", p:"The 30-day-window analysis shows a clean +75–103% member lift; an earlier framing called it weak/mixed. Likely a window/denominator difference (30-day first-order window vs broader). Reconcile the window before quoting, and remember causality is unproven (self-selection)."},
+  {h:"7 · Subscription entry-tier price ($9 vs $45)", p:"Early scenario doc: 'Drop Pass $9' (perks/access only). Later board script: 'Pattern Drop Pass $45' (3-pair box). The product evolved between drafts — confirm the current intended tier with the team."},
+  {h:"8 · Acquisition growth-baseline rate (1.32× vs 1.21×)", p:"The cohort-size projection uses ~1.32× YoY; the contribution model references ~1.21×. The incremental-acquisition % is sensitive to this input — standardize the baseline."}
+ ]}
+];
+
+const tabwrap=document.getElementById('tabwrap');
+const secTitle=document.getElementById('secTitle');
+const secDesc=document.getElementById('secDesc');
+const cardsEl=document.getElementById('cards');
+const filterEl=document.getElementById('filter');
+const countEl=document.getElementById('count');
+const expandBtn=document.getElementById('expandBtn');
+let cur=0, expandedAll=false;
+
+SECTIONS.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.textContent=s.tab; b.onclick=()=>select(i);
+  tabwrap.appendChild(b);
+});
+
+function esc(t){return t;}
+function renderCard(c){
+  const flag = c.flag ? `<div class="flag"><b>⚠ Note:</b> ${c.flag}</div>` : '';
+  const calc = (c.calc||[]).map(x=>`<li>${x}</li>`).join('');
+  return `<div class="card" data-text="${(c.qid+' '+c.q).toLowerCase().replace(/"/g,'')}">
+    <div class="qh"><span class="qid">${c.qid}</span><span class="qtext">${c.q}</span><span class="chev">▶</span></div>
+    <div class="body">
+      <div class="block sources"><span class="label src">Data sources</span><div class="content">${c.src}</div></div>
+      <div class="block"><span class="label calc">Calculations run</span><div class="content"><ul>${calc}</ul></div></div>
+      <div class="block insight"><span class="label ins">Final insight</span><div class="content">${c.ins}</div></div>
+      ${flag}
+    </div></div>`;
+}
+function select(i){
+  cur=i; expandedAll=false; expandBtn.textContent='Expand all';
+  [...tabwrap.children].forEach((b,j)=>b.classList.toggle('active',j===i));
+  const s=SECTIONS[i];
+  secTitle.textContent=s.title; secDesc.textContent=s.desc;
+  filterEl.value=''; filterEl.style.display = s.tensions ? 'none':'block';
+  expandBtn.style.display = s.tensions ? 'none':'block';
+  if(s.tensions){
+    cardsEl.innerHTML = s.tensions.map(t=>`<div class="tnote"><h3>${t.h}</h3><p>${t.p}</p></div>`).join('');
+    countEl.textContent = s.tensions.length+' items';
+  }else{
+    cardsEl.innerHTML = s.cards.map(renderCard).join('');
+    countEl.textContent = s.cards.length+' questions';
+    bindCards();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function bindCards(){
+  cardsEl.querySelectorAll('.qh').forEach(h=>{
+    h.onclick=()=>h.parentElement.classList.toggle('open');
+  });
+}
+filterEl.oninput=()=>{
+  const q=filterEl.value.toLowerCase();
+  let n=0;
+  cardsEl.querySelectorAll('.card').forEach(c=>{
+    const ok=c.dataset.text.includes(q); c.style.display=ok?'block':'none'; if(ok)n++;
+  });
+  countEl.textContent=n+' / '+SECTIONS[cur].cards.length+' questions';
+};
+expandBtn.onclick=()=>{
+  expandedAll=!expandedAll;
+  cardsEl.querySelectorAll('.card').forEach(c=>c.classList.toggle('open',expandedAll));
+  expandBtn.textContent=expandedAll?'Collapse all':'Expand all';
+};
+select(0);
+</script>
+</body>
+</html>
