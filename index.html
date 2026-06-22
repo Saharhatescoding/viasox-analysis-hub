@@ -60,6 +60,18 @@
   footer{max-width:1080px;margin:0 auto;padding:0 24px 50px;color:var(--muted);font-size:12px}
   .expandall{background:#fff;border:1px solid var(--line);color:var(--muted);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12.5px}
   .expandall:hover{color:var(--ink)}
+  .charts-note{font-size:12.5px;color:#7a5512;background:rgba(183,121,31,.07);border:1px solid rgba(183,121,31,.25);border-radius:8px;padding:9px 12px;margin:0 0 14px}
+  .chartwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px 14px;margin:0 0 14px;box-shadow:0 1px 2px rgba(20,30,50,.04)}
+  .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .chart-title{font-size:15.5px;font-weight:720}
+  .chart-sub{font-size:12.5px;color:var(--muted);margin-top:3px;max-width:560px;line-height:1.5}
+  .grain-toggle{display:flex;gap:3px;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:3px;flex:none}
+  .grain-toggle button{border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:600;padding:5px 11px;border-radius:6px;cursor:pointer}
+  .grain-toggle button.active{background:#fff;color:#0d1320;box-shadow:0 1px 2px rgba(20,30,50,.08)}
+  .chart-area{position:relative;width:100%}
+  .chart-area svg{width:100%;height:auto;display:block}
+  .chart-tip{position:absolute;pointer-events:none;background:#1b1f27;color:#fff;font-size:12px;padding:6px 9px;border-radius:7px;transform:translate(-50%,-135%);white-space:nowrap;opacity:0;transition:opacity .08s;box-shadow:0 4px 12px rgba(0,0,0,.18);z-index:5}
+  .chart-cap{font-size:11.5px;color:var(--muted);margin-top:9px}
   @media (max-width:640px){.qtext{font-size:14.5px}}
 </style>
 </head>
@@ -73,6 +85,7 @@
 
 <main>
   <div class="secthead"><h2 id="secTitle"></h2><p id="secDesc"></p></div>
+  <div id="charts"></div>
   <div class="toolbar">
     <input id="filter" placeholder="Filter questions in this section…">
     <span class="count" id="count"></span>
@@ -343,7 +356,16 @@ const SECTIONS = [
  ]},
 
  {id:"s5", tab:"5 · Membership", title:"Membership / VIP Club (Inveterate → Rivo)",
-  desc:"Member counts, conversion, new-vs-returning mix, and whether membership lifts 30-day LTV.", cards:[
+  desc:"Member counts, conversion, new-vs-returning mix, and whether membership lifts 30-day LTV.",
+  charts:[
+   {key:"members", kind:"bar", color:"#2563eb", title:"Members acquired over time",
+    sub:"New VIP Club signups per period — first membership purchase per email (product-id detection, deduped). Toggle the grain.",
+    fmt:"int", cap:"Source: BigQuery viadb-396013.shopbq.orders. Member = first occurrence of a membership product_id per email. Data through 2026-06-11."},
+   {key:"rate", kind:"line", color:"#0f9d6b", title:"Membership conversion rate",
+    sub:"Members acquired ÷ unique paying customers in the same period. Per-period rate (computed at each grain — not a cumulative average).",
+    fmt:"pct", cap:"The March 2026 step-up is the Inveterate→Rivo migration + repricing, not organic growth — pre-March rates (~0.1–0.3%) and post-March rates (~2–2.8%) are not directly comparable."}
+  ],
+  cards:[
 
   {qid:"5.1", q:"How many members acquired, at what conversion rate?",
    problem:"The VIP Club is a paid program, so leadership needs a trustworthy member count and conversion rate to judge whether it's growing and worth its app/operational cost. The hard part is that the underlying data is booby-trapped: the membership product was renamed and re-priced and migrated between apps, so naive detection methods give wildly wrong counts.",
@@ -479,6 +501,79 @@ const SECTIONS = [
  ]}
 ];
 
+const MEMBER_SERIES = {"daily":[["2026-03-15",20,1.061],["2026-03-16",17,1.064],["2026-03-17",32,2.059],["2026-03-18",33,2.237],["2026-03-19",58,3.212],["2026-03-20",45,2.41],["2026-03-21",35,2.254],["2026-03-22",44,2.633],["2026-03-23",45,3.036],["2026-03-24",26,2.006],["2026-03-25",28,2.229],["2026-03-26",44,2.808],["2026-03-27",47,2.984],["2026-03-28",30,1.912],["2026-03-29",35,2.349],["2026-03-30",32,2.51],["2026-03-31",21,1.606],["2026-04-01",40,2.835],["2026-04-02",45,2.868],["2026-04-03",37,2.705],["2026-04-04",34,2.415],["2026-04-05",30,2.226],["2026-04-06",40,2.903],["2026-04-07",27,1.958],["2026-04-08",35,2.834],["2026-04-09",41,3.176],["2026-04-10",58,3.72],["2026-04-11",38,2.825],["2026-04-12",35,2.577],["2026-04-13",24,2.041],["2026-04-14",28,2.426],["2026-04-15",34,2.543],["2026-04-16",44,2.675],["2026-04-17",47,2.594],["2026-04-18",37,2.295],["2026-04-19",47,3.159],["2026-04-20",28,1.817],["2026-04-21",17,1.197],["2026-04-22",32,2.238],["2026-04-23",35,2.341],["2026-04-24",28,1.882],["2026-04-25",58,3.498],["2026-04-26",41,2.608],["2026-04-27",42,2.832],["2026-04-28",43,2.71],["2026-04-29",35,2.232],["2026-04-30",48,2.414],["2026-05-01",45,2.567],["2026-05-02",47,2.57],["2026-05-03",50,2.365],["2026-05-04",37,2.174],["2026-05-05",25,1.817],["2026-05-06",40,2.772],["2026-05-07",43,2.71],["2026-05-08",41,2.689],["2026-05-09",50,3.025],["2026-05-10",40,2.514],["2026-05-11",39,2.735],["2026-05-12",25,1.928],["2026-05-13",39,3.009],["2026-05-14",59,3.037],["2026-05-15",43,2.078],["2026-05-16",51,2.851],["2026-05-17",46,2.733],["2026-05-18",45,2.538],["2026-05-19",36,2.147],["2026-05-20",59,3.187],["2026-05-21",52,2.608],["2026-05-22",40,2.161],["2026-05-23",41,2.158],["2026-05-24",41,2.373],["2026-05-25",41,2.583],["2026-05-26",23,1.727],["2026-05-27",14,1.17],["2026-05-28",33,1.932],["2026-05-29",28,1.793],["2026-05-30",38,2.152],["2026-05-31",41,2.482],["2026-06-01",31,2.266],["2026-06-02",17,1.472],["2026-06-03",33,2.88],["2026-06-04",28,1.9],["2026-06-05",31,2.356],["2026-06-06",28,2.142],["2026-06-07",25,2.212],["2026-06-08",33,2.847],["2026-06-09",15,1.742],["2026-06-10",27,2.016],["2026-06-11",32,2.119]],"weekly":[["2025-06-23",3,0.043],["2025-06-30",6,0.062],["2025-07-07",11,0.063],["2025-07-14",2,0.021],["2025-07-21",3,0.035],["2025-07-28",7,0.078],["2025-08-04",10,0.109],["2025-08-11",1,0.012],["2025-09-01",5,0.053],["2025-09-08",13,0.207],["2025-09-15",8,0.109],["2025-09-22",3,0.043],["2025-09-29",7,0.08],["2025-10-06",4,0.036],["2025-10-13",5,0.055],["2025-10-20",4,0.049],["2025-10-27",11,0.094],["2025-11-03",12,0.084],["2025-11-10",8,0.056],["2025-11-17",6,0.038],["2025-11-24",3,0.014],["2025-12-01",12,0.069],["2025-12-08",14,0.09],["2025-12-15",23,0.168],["2025-12-22",39,0.224],["2025-12-29",24,0.142],["2026-01-05",11,0.098],["2026-01-12",25,0.216],["2026-01-19",15,0.128],["2026-01-26",22,0.179],["2026-02-02",16,0.147],["2026-02-09",16,0.133],["2026-02-16",14,0.111],["2026-02-23",30,0.256],["2026-03-02",178,1.5],["2026-03-09",177,1.544],["2026-03-16",264,2.316],["2026-03-23",255,2.52],["2026-03-30",239,2.491],["2026-04-06",274,2.901],["2026-04-13",261,2.575],["2026-04-20",239,2.282],["2026-04-27",310,2.541],["2026-05-04",276,2.559],["2026-05-11",302,2.65],["2026-05-18",314,2.48],["2026-05-25",218,2.032],["2026-06-01",193,2.189],["2026-06-08",107,2.207]],"monthly":[["2025-01-01",62,0.287],["2025-02-01",84,0.307],["2025-03-01",27,0.106],["2025-04-01",12,0.042],["2025-05-01",37,0.13],["2025-06-01",32,0.101],["2025-07-01",27,0.059],["2025-08-01",13,0.035],["2025-09-01",30,0.101],["2025-10-01",27,0.069],["2025-11-01",32,0.049],["2025-12-01",93,0.138],["2026-01-01",86,0.17],["2026-02-01",79,0.178],["2026-03-01",930,2.041],["2026-04-01",1128,2.778],["2026-05-01",1252,2.625],["2026-06-01",300,2.217]]};
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtVal(v,fmt){return fmt==='pct'?(Math.round(v*100)/100).toFixed(2)+'%':Math.round(v).toLocaleString();}
+function fmtDate(t,grain){const p=t.split('-').map(Number);const mon=MONTHS[p[1]-1];if(grain==='monthly')return mon+" '"+String(p[0]).slice(2);return mon+' '+p[2];}
+function niceMax(v,fmt){if(v<=0)return fmt==='pct'?1:10;const pow=Math.pow(10,Math.floor(Math.log10(v)));const n=v/pow;let step;if(n<=1)step=1;else if(n<=2)step=2;else if(n<=2.5)step=2.5;else if(n<=5)step=5;else step=10;return step*pow;}
+function drawSVG(data, cfg, grain){
+  const W=760,H=250,padL=52,padR=14,padT=14,padB=30;
+  const plotW=W-padL-padR, plotH=H-padT-padB, n=data.length;
+  const vals=data.map(d=>cfg.key==='members'?d[1]:d[2]);
+  const mx=niceMax(Math.max(...vals,0.0001), cfg.fmt);
+  const band=plotW/n;
+  const X=i=>padL+band*(i+0.5);
+  const Y=v=>padT+plotH*(1-v/mx);
+  let g='';
+  // gridlines + y labels
+  for(let k=0;k<=4;k++){const v=mx*k/4, y=Y(v);
+    g+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#e8ebf0" stroke-width="1"/>`;
+    g+=`<text x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="11" fill="#8a93a3">${fmtVal(v,cfg.fmt)}</text>`;
+  }
+  // x labels
+  const step=Math.max(1,Math.ceil(n/8));
+  for(let i=0;i<n;i+=step){g+=`<text x="${X(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="#8a93a3">${fmtDate(data[i][0],grain)}</text>`;}
+  if(cfg.kind==='bar'){
+    const bw=Math.max(1.5,band*0.62);
+    data.forEach((d,i)=>{const v=cfg.key==='members'?d[1]:d[2];const y=Y(v);g+=`<rect x="${(X(i)-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(padT+plotH-y).toFixed(1)}" rx="1.5" fill="${cfg.color}" opacity="0.85"/>`;});
+  } else {
+    const pts=data.map((d,i)=>{const v=cfg.key==='members'?d[1]:d[2];return X(i).toFixed(1)+','+Y(v).toFixed(1);});
+    const area=`${padL},${padT+plotH} ${pts.join(' ')} ${(padL+plotW)},${padT+plotH}`;
+    g+=`<polygon points="${area}" fill="${cfg.color}" opacity="0.08"/>`;
+    g+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${cfg.color}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  }
+  // hover overlay + guide + dot
+  g+=`<line class="guide" x1="0" y1="${padT}" x2="0" y2="${padT+plotH}" stroke="#9aa3b2" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>`;
+  g+=`<circle class="dot" r="4" fill="#fff" stroke="${cfg.color}" stroke-width="2.5" opacity="0"/>`;
+  g+=`<rect class="hovzone" x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="transparent"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="font-family:ui-monospace,Menlo,monospace">${g}</svg>`;
+}
+function attachHover(area, data, cfg, grain){
+  const W=760,padL=52,padR=14,padT=14,plotW=W-padL-padR,plotH=250-padT-30,n=data.length,band=plotW/n,H=250;
+  const mx=niceMax(Math.max(...data.map(d=>cfg.key==='members'?d[1]:d[2]),0.0001),cfg.fmt);
+  const svg=area.querySelector('svg'), guide=area.querySelector('.guide'), dot=area.querySelector('.dot'), zone=area.querySelector('.hovzone');
+  let tip=area.querySelector('.chart-tip'); if(!tip){tip=document.createElement('div');tip.className='chart-tip';area.appendChild(tip);}
+  const X=i=>padL+band*(i+0.5), Y=v=>padT+plotH*(1-v/mx);
+  function move(e){
+    const r=svg.getBoundingClientRect(), cx=('touches'in e?e.touches[0].clientX:e.clientX)-r.left;
+    const sx=cx*(W/r.width); let i=Math.round((sx-padL)/band-0.5); i=Math.max(0,Math.min(n-1,i));
+    const d=data[i], v=cfg.key==='members'?d[1]:d[2], px=X(i), py=Y(v);
+    guide.setAttribute('x1',px);guide.setAttribute('x2',px);guide.setAttribute('opacity','1');
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);dot.setAttribute('opacity','1');
+    tip.style.opacity='1';
+    tip.innerHTML=`<b>${fmtVal(v,cfg.fmt)}</b> · ${fmtDate(d[0],grain)}`;
+    tip.style.left=(px/W*r.width)+'px'; tip.style.top=(py/H*r.height)+'px';
+  }
+  function leave(){guide.setAttribute('opacity','0');dot.setAttribute('opacity','0');tip.style.opacity='0';}
+  zone.addEventListener('mousemove',move); zone.addEventListener('mouseleave',leave);
+  zone.addEventListener('touchstart',move); zone.addEventListener('touchmove',move);
+}
+function renderCharts(host, configs){
+  host.innerHTML='';
+  configs.forEach(cfg=>{
+    const card=document.createElement('div'); card.className='chartwrap';
+    card.innerHTML=`<div class="chart-head"><div><div class="chart-title">${cfg.title}</div><div class="chart-sub">${cfg.sub}</div></div>
+      <div class="grain-toggle">${['daily','weekly','monthly'].map(x=>`<button data-g="${x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')}</div></div>
+      <div class="chart-area"></div><div class="chart-cap">${cfg.cap||''}</div>`;
+    host.appendChild(card);
+    const area=card.querySelector('.chart-area'), btns=card.querySelectorAll('.grain-toggle button');
+    let grain='monthly';
+    function draw(){btns.forEach(b=>b.classList.toggle('active',b.dataset.g===grain));area.innerHTML=drawSVG(MEMBER_SERIES[grain],cfg,grain);attachHover(area,MEMBER_SERIES[grain],cfg,grain);}
+    btns.forEach(b=>b.onclick=()=>{grain=b.dataset.g;draw();});
+    draw();
+  });
+}
+const chartsHost=document.getElementById('charts');
 const tabwrap=document.getElementById('tabwrap');
 const secTitle=document.getElementById('secTitle');
 const secDesc=document.getElementById('secDesc');
@@ -511,6 +606,7 @@ function select(i){
   [...tabwrap.children].forEach((b,j)=>b.classList.toggle('active',j===i));
   const s=SECTIONS[i];
   secTitle.textContent=s.title; secDesc.textContent=s.desc;
+  if(s.charts){renderCharts(chartsHost, s.charts);} else {chartsHost.innerHTML='';}
   filterEl.value=''; filterEl.style.display = s.tensions ? 'none':'block';
   expandBtn.style.display = s.tensions ? 'none':'block';
   if(s.tensions){
